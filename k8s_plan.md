@@ -514,7 +514,7 @@ kubectl -n harness create job \
 
 ---
 
-## Phase 5: Automation & Workflows
+## Phase 5: Automation & Workflows -- Skipping to 6 to learn about helm
 
 **Goal**: Scheduled indexing, automated maintenance, optional n8n for visual workflows.
 
@@ -653,10 +653,10 @@ spec:
 
 ### Tasks
 
-- [ ] Initialize Helm chart structure
-- [ ] Templatize all manifests
-- [ ] Add values.yaml for customization
-- [ ] Document installation
+- [x] Initialize Helm chart structure
+- [x] Templatize all manifests
+- [x] Add values.yaml for customization
+- [x] Document installation
 
 ### Structure
 ```

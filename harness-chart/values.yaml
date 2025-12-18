@@ -1,0 +1,47 @@
+namespace: harness-helm
+
+ollama:
+  image: ollama/ollama:latest
+  resources:
+    requests:
+      memory: "8Gi"
+      cpu: "2"
+    limits:
+      memory: "24Gi"
+      cpu: "4"
+  storage: 50Gi
+  models:
+    - codestral:22b-v0.1-q8_0
+    - nomic-embed-text
+
+qdrant:
+  image: qdrant/qdrant:latest
+  resources:
+    requests:
+      memory: "512Mi"
+    limits:
+      memory: "2Gi"
+  storage: 10Gi
+
+harness:
+  image: harness:local
+  ollamaMode: host
+  chatModel: codestral:22b-v0.1-q8_0
+  embedModel: nomic-embed-text
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+jobs:
+  image: harness:local
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"

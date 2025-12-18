@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harness-config
+  namespace: {{ .Values.namespace }}
+data:
+{{- if eq .Values.harness.ollamaMode "host" }}
+  OLLAMA_HOST: "http://host.minikube.internal:11434"
+{{- else }}
+  OLLAMA_HOST: "http://ollama.harness.svc.cluster.local:11434"
+{{- end }}
+  QDRANT_HOST: "qdrant.harness.svc.cluster.local"
+  QDRANT_PORT: "6333"
+  CHAT_MODEL: "{{ .Values.harness.chatModel }}"
+  EMBED_MODEL: "{{ .Values.harness.embedModel }}"

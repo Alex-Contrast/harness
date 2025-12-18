@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harness
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: harness
+  template:
+    metadata:
+      labels:
+        app: harness
+    spec:
+      containers:
+        - name: harness
+          image: {{ .Values.harness.image }}
+          imagePullPolicy: Never  # Use local image
+          envFrom:
+            - configMapRef:
+                name: harness-config
+          resources:
+{{- .Values.harness.resources | toYaml | nindent 12 }}
+          stdin: true
+          tty: true

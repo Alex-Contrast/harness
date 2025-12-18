@@ -145,4 +145,36 @@ minikube image load harness:local --overwrite
 # rebuild image
 minikube image build -t harness:local .
 docker build -t harness:local . && docker save harness:local | minikube image load --overwrite -
+
+# helm
+#Helm is the package manager for Kubernetes:
+#| Problem                                        | Helm Solution                    |
+#|------------------------------------------------|----------------------------------|
+#| Many YAML files to manage                      | Bundle into one chart            |
+#| Hardcoded values (namespace, image, resources) | values.yaml + templating         |
+#| "Did I apply everything?"                      | helm install deploys all at once |
+#| Updating deployments                           | helm upgrade applies changes     |
+#| Rollback mistakes                              | helm rollback harness 1          |
+#| Sharing setups                                 | Publish chart to Helm repo       |
+helm install harness ./harness-chart --set ollama.resources.limits.memory=32Gi
+# Override ollamaMode
+helm install harness ./harness-chart --set harness.ollamaMode=k8s
+# Dry run to see rendered output
+helm template harness ./harness-chart
+# install
+helm install harness ./harness-chart --create-namespace -n harness-helm
+kubectl -n harness-helm get pods
+
+# Helm commands:
+# See what's deployed
+helm list -n harness-helm
+# Upgrade after changes
+helm upgrade harness ./harness-chart -n harness-helm
+# Uninstall (removes everything)
+helm uninstall harness -n harness-helm
+# See history
+helm history harness -n harness-helm
+# clean up the duplicate
+helm uninstall harness -n harness-helm
+kubectl delete namespace harness-helm
 ```
