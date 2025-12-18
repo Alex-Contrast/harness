@@ -50,6 +50,7 @@ else
 fi
 
 kubectl apply -f k8s/harness/deployment.yml
+kubectl apply -f k8s/harness/pdb.yml
 
 # Wait for pods to be created and ready
 echo "Waiting for pods to be ready..."

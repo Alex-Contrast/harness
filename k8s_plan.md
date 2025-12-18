@@ -381,11 +381,11 @@ kubectl -n harness exec -it deployment/harness -- python -m harness "explain thi
 
 ### Tasks
 
-- [ ] Add readiness probe to Ollama (wait for model load)
-- [ ] Add liveness probes to all services
-- [ ] Tune resource limits based on actual usage
-- [ ] Add pod disruption budgets (optional)
-- [ ] Set up basic logging aggregation (optional)
+- [x] Add readiness probe to Ollama (wait for model load)
+- [x] Add liveness probes to all services
+- [x] Tune resource limits based on actual usage
+- [x] Add pod disruption budgets (optional)
+- [ ] Set up basic logging aggregation (optional) --> using stern for observability
 
 ### Ollama Probes
 ```yaml

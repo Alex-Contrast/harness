@@ -101,4 +101,28 @@ print(urllib.request.urlopen(req, timeout=120).read().decode())
 "
 # watch logs
 kubectl -n harness logs -f deployment/harness
+
+# metrics server
+minikube addons enable metrics-server
+# watch metrics
+watch kubectl -n harness top pods
+
+# Check if metrics-server pod is running
+kubectl -n kube-system get pods -l k8s-app=metrics-server
+kubectl -n kube-system describe pod -l k8s-app=metrics-server
+
+#check minikube
+kubectl describe node minikube | grep -A5 "Taints"
+
+# check usage
+kubectl -n harness top pods
+kubectl -n harness top pods --containers
+#| Metric                  | Too Low        | Too High          |
+#|-------------------------|----------------|-------------------|
+#| Memory usage near limit | OOMKilled risk | Wasting resources |
+#| CPU throttled           | Slow responses | Wasting quota     |
+
+# stern to watch logs
+stern -n harness .
+# <pod-name> <container-name> │ <log message>
 ```

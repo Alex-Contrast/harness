@@ -28,6 +28,20 @@ spec:
           volumeMounts:
             - name: ollama-data
               mountPath: /root/.ollama
+          readinessProbe:
+            httpGet:
+              path: /api/tags  # Returns loaded models
+              port: 11434
+            initialDelaySeconds: 30  # Models take time to load
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
       volumes:
         - name: ollama-data
           hostPath:
