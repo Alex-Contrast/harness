@@ -127,6 +127,16 @@ OLLAMA_MODE=host
 OLLAMA_HOST=0.0.0.0:11434
 QDRANT_HOST=localhost
 QDRANT_PORT=6333
+
+# Use mcp-contrast (source .env):
+source .env
+helm upgrade --install harness ./harness-chart -n harness-helm --create-namespace \
+--set contrast.enabled=true \
+--set contrast.hostName=$CONTRAST_HOST_NAME \
+--set contrast.apiKey=$CONTRAST_API_KEY \
+--set contrast.serviceKey=$CONTRAST_SERVICE_KEY \
+--set contrast.username=$CONTRAST_USERNAME \
+--set contrast.orgId=$CONTRAST_ORG_ID
 ```
 
 ### Ollama Modes

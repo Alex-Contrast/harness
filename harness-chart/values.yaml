@@ -45,3 +45,11 @@ jobs:
     limits:
       memory: "512Mi"
       cpu: "500m"
+
+contrast:
+  enabled: false
+  hostName: ""
+  apiKey: ""
+  orgId: ""
+  username: ""
+  serviceKey: ""

@@ -766,3 +766,14 @@ kubectl -n harness describe pvc <pvc-name>
 ```
 
 ---
+
+[//]: # (TODO)
+Contrast MCP:
+- JAR is already in the Docker image
+- Just needs credentials in a K8s Secret:
+  kubectl -n harness create secret generic contrast-creds \
+  --from-literal=CONTRAST_HOST_NAME=... \
+  --from-literal=CONTRAST_API_KEY=... \
+  --from-literal=CONTRAST_ORG_ID=... \
+  --from-literal=CONTRAST_AUTH_HEADER=...
+- Then update harness deployment to use the secret

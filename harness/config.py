@@ -46,7 +46,8 @@ if os.getenv("CONTRAST_API_KEY"):
             "CONTRAST_HOST_NAME": os.getenv("CONTRAST_HOST_NAME", ""),
             "CONTRAST_API_KEY": os.getenv("CONTRAST_API_KEY", ""),
             "CONTRAST_ORG_ID": os.getenv("CONTRAST_ORG_ID", ""),
-            "CONTRAST_AUTH_HEADER": os.getenv("CONTRAST_AUTH_HEADER", ""),
+            "CONTRAST_SERVICE_KEY": os.getenv("CONTRAST_SERVICE_KEY", ""),
+            "CONTRAST_USERNAME": os.getenv("CONTRAST_USERNAME", ""),
         }
     })
 

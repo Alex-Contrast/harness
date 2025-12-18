@@ -16,7 +16,7 @@ RUN curl -fsSL https://nodejs.org/dist/v20.11.0/node-v20.11.0-linux-arm64.tar.xz
 
 # Download Contrast MCP server JAR
 RUN curl -L -o /opt/mcp-contrast.jar \
-    https://github.com/Contrast-Security-OSS/mcp-contrast/releases/latest/download/mcp-contrast.jar
+    https://github.com/Contrast-Security-OSS/mcp-contrast/releases/download/v0.0.15/mcp-contrast-0.0.15.jar
 
 COPY pyproject.toml .
 RUN pip install --no-cache-dir .
