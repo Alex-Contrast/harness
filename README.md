@@ -32,6 +32,10 @@ pip install -e .
 
 # Run agent
 python -m harness
+
+# with k8s
+kubectl -n harness attach -it deployment/harness
+# to quit interactive mode -- /quit
 ```
 
 ## Scripts
@@ -49,8 +53,10 @@ harness/
 ├── harness/           # Python agent
 ├── k8s/               # Kubernetes manifests
 │   ├── namespace.yml
-│   ├── ollama/        # LLM service
-│   └── qdrant/        # Vector DB
+│   ├── ollama/        # LLM service (k8s mode only)
+│   ├── qdrant/        # Vector DB
+│   └── harness/       # Agent deployment + configmaps
+├── Dockerfile
 ├── start.sh
 ├── stop.sh
 └── .env               # Environment config
@@ -59,11 +65,26 @@ harness/
 ## Configuration
 
 Environment variables (`.env`):
-```
-OLLAMA_HOST=http://localhost:11434
+```bash
+# Minikube resources
+MINIKUBE_MEMORY=24g
+MINIKUBE_CPUS=4
+
+# Ollama mode: "host" (native, fast) or "k8s" (containerized, slower)
+OLLAMA_MODE=host
+
+# Service endpoints (for local dev without K8s)
+OLLAMA_HOST=0.0.0.0:11434
 QDRANT_HOST=localhost
 QDRANT_PORT=6333
 ```
+
+### Ollama Modes
+
+| Mode | Description | Performance |
+|------|-------------|-------------|
+| `host` | Native Ollama on Mac, Harness+Qdrant in K8s | Fast |
+| `k8s` | Everything containerized in K8s | Slower, but fully orchestrated |
 
 ## REPL Commands
 
@@ -77,23 +98,43 @@ QDRANT_PORT=6333
 
 ## Architecture
 
+### Host Mode (OLLAMA_MODE=host) - Recommended
 ```
 ┌─────────────────────────────────────────┐
-│  Your Machine                           │
+│  Your Mac                               │
 │                                         │
-│  ┌───────────┐     port-forward         │
-│  │  Harness  │◄────────────────────┐    │
-│  │  (Python) │                     │    │
-│  └───────────┘                     │    │
-│                                    │    │
-│  ┌─────────────────────────────────┼──┐ │
-│  │  Minikube (K8s)                 │  │ │
-│  │                                 │  │ │
-│  │  ┌─────────┐    ┌─────────┐     │  │ │
-│  │  │ Ollama  │    │ Qdrant  │◄───-┘  │ │
-│  │  │ :11434  │    │ :6333   │        │ │
-│  │  └─────────┘    └─────────┘        │ │
-│  │                                    │ │
-│  └────────────────────────────────────┘ │
+│  ┌─────────────────┐                    │
+│  │ Ollama (native) │ ← Fast, full HW    │
+│  │ 0.0.0.0:11434   │                    │
+│  └────────┬────────┘                    │
+│           │                             │
+│  ┌────────┼─────────────────────────┐   │
+│  │  K8s   │                         │   │
+│  │        ▼                         │   │
+│  │  ┌──────────┐    ┌─────────┐     │   │
+│  │  │ Harness  │───▶│ Qdrant  │     │   │
+│  │  └──────────┘    └─────────┘     │   │
+│  └──────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+```
+
+### K8s Mode (OLLAMA_MODE=k8s) - Full Containerization
+```
+┌─────────────────────────────────────────┐
+│  Your Mac                               │
+│                                         │
+│  ┌──────────────────────────────────┐   │
+│  │  Minikube (K8s)                  │   │
+│  │                                  │   │
+│  │  ┌─────────┐  ┌─────────┐        │   │
+│  │  │ Ollama  │  │ Qdrant  │        │   │
+│  │  │ :11434  │  │ :6333   │        │   │
+│  │  └────┬────┘  └────┬────┘        │   │
+│  │       │            │             │   │
+│  │       ▼            ▼             │   │
+│  │      ┌──────────────┐            │   │
+│  │      │   Harness    │            │   │
+│  │      └──────────────┘            │   │
+│  └──────────────────────────────────┘   │
 └─────────────────────────────────────────┘
 ```

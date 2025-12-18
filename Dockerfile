@@ -7,8 +7,8 @@ RUN pip install --no-cache-dir .
 
 COPY harness/ harness/
 
-# Use environment variables for config
-ENV OLLAMA_HOST=ollama.harness.svc.cluster.local:11434
+# Default env vars (overridden by K8s ConfigMap)
+ENV OLLAMA_HOST=http://ollama.harness.svc.cluster.local:11434
 ENV QDRANT_HOST=qdrant.harness.svc.cluster.local
 ENV QDRANT_PORT=6333
 

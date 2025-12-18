@@ -4,7 +4,8 @@ metadata:
   name: harness-config
   namespace: harness
 data:
-  OLLAMA_HOST: "http://ollama.harness.svc.cluster.local:11434"
+  # Use host Ollama for better performance (native hardware access)
+  OLLAMA_HOST: "http://host.minikube.internal:11434"
   QDRANT_HOST: "qdrant.harness.svc.cluster.local"
   QDRANT_PORT: "6333"
   CHAT_MODEL: "codestral:22b-v0.1-q8_0"
