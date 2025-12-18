@@ -1,0 +1,76 @@
+"""Configuration for Harness agent."""
+
+from dataclasses import dataclass, field
+from pathlib import Path
+import json
+
+
+@dataclass
+class MCPServerConfig:
+    """Configuration for an MCP server."""
+    name: str
+    command: str
+    args: list[str]
+    env: dict[str, str] | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "MCPServerConfig":
+        return cls(
+            name=data["name"],
+            command=data["command"],
+            args=data.get("args", []),
+            env=data.get("env")
+        )
+
+
+# Default MCP servers - filesystem is essential for a coding agent
+# Using uvx (Python's npx) to run the Python-based MCP filesystem server
+DEFAULT_MCP_SERVERS = [
+    {
+        "name": "filesystem",
+        "command": "uvx",
+        "args": ["mcp-server-filesystem", str(Path.home())]
+    }
+]
+
+
+@dataclass
+class Config:
+    chat_model: str = "codestral:22b-v0.1-q8_0"
+    max_steps: int = 20
+    max_context_tokens: int = 28000  # Leave headroom in 32k window
+    mcp_servers: list[dict] = field(default_factory=lambda: DEFAULT_MCP_SERVERS.copy())
+
+    @classmethod
+    def load(cls) -> "Config":
+        """Load config from ~/.harness/config.json or use defaults."""
+        config_path = Path.home() / ".harness" / "config.json"
+        if config_path.exists():
+            try:
+                data = json.loads(config_path.read_text())
+                return cls(
+                    chat_model=data.get("chat_model", "codestral:22b-v0.1-q8_0"),
+                    max_steps=data.get("max_steps", 20),
+                    max_context_tokens=data.get("max_context_tokens", 28000),
+                    mcp_servers=data.get("mcp_servers", DEFAULT_MCP_SERVERS.copy())
+                )
+            except (json.JSONDecodeError, TypeError):
+                pass
+        return cls()
+
+    def get_mcp_servers(self) -> list[MCPServerConfig]:
+        """Get MCP server configs."""
+        return [MCPServerConfig.from_dict(s) for s in self.mcp_servers]
+
+    def save(self) -> None:
+        """Save config to ~/.harness/config.json."""
+        config_dir = Path.home() / ".harness"
+        config_dir.mkdir(exist_ok=True)
+        config_path = config_dir / "config.json"
+        data = {
+            "chat_model": self.chat_model,
+            "max_steps": self.max_steps,
+            "max_context_tokens": self.max_context_tokens,
+            "mcp_servers": self.mcp_servers
+        }
+        config_path.write_text(json.dumps(data, indent=2))

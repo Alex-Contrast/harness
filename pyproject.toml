@@ -1,0 +1,16 @@
+[project]
+name = "harness"
+version = "0.1.0"
+description = "Local code agent with Ollama and MCP"
+requires-python = ">=3.11"
+dependencies = [
+    "ollama",
+    "mcp",
+]
+
+[project.scripts]
+harness = "harness.__main__:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
