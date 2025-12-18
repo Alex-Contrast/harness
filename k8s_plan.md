@@ -276,12 +276,12 @@ kubectl delete namespace harness
 
 ### Tasks
 
-- [ ] Create Dockerfile for harness agent
-- [ ] Build and load image into minikube
-- [ ] Create ConfigMap for agent settings
-- [ ] Create Deployment for harness agent
-- [ ] Update agent code to read config from environment/ConfigMap
-- [ ] Test: agent runs in cluster, uses internal DNS
+- [x] Create Dockerfile for harness agent
+- [x] Build and load image into minikube
+- [x] Create ConfigMap for agent settings
+- [x] Create Deployment for harness agent
+- [x] Update agent code to read config from environment/ConfigMap
+- [x] Test: agent runs in cluster, uses internal DNS
 
 ### Dockerfile
 ```dockerfile

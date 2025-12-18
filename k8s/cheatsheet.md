@@ -64,4 +64,41 @@ kubectl -n harness logs -f statefulset/qdrant
 
 # Cleanup
 kubectl delete namespace harness
+
+### Build Commands
+# Build image
+docker build -t harness:local .
+
+# Load into minikube
+minikube image load harness:local
+
+# Deploy
+kubectl apply -f k8s/harness/
+
+# Attach to agent (interactive)
+kubectl -n harness attach -it deployment/harness
+
+# Or run one-off command
+kubectl -n harness exec -it deployment/harness -- python -m harness "explain this repo"
+
+# Dynamic (finds pod name for you)
+kubectl -n harness cp ~/.ollama/models/blobs $(kubectl -n harness get pods -l app=ollama -o jsonpath='{.items[0].metadata.name}'):/root/.ollama/models/blobs
+
+# Or direct with your pod name
+kubectl -n harness cp ~/.ollama/models/blobs ollama-797bf4bdf9-rzdqq:/root/.ollama/models/blobs
+kubectl -n harness cp ~/.ollama/models/manifests ollama-797bf4bdf9-rzdqq:/root/.ollama/models/manifests
+
+# Check if Ollama is reachable
+kubectl -n harness exec deployment/harness -- python -c "import urllib.request; print(urllib.request.urlopen('http://ollama.harness.svc.cluster.local:11434/api/tags').read().decode())"
+
+# Test model
+kubectl -n harness exec deployment/harness -- python -c "
+import urllib.request
+import json
+data = json.dumps({'model': 'codestral:22b-v0.1-q8_0', 'prompt': 'hi', 'stream': False}).encode()
+req = urllib.request.Request('http://ollama.harness.svc.cluster.local:11434/api/generate', data=data, headers={'Content-Type': 'application/json'})
+print(urllib.request.urlopen(req, timeout=120).read().decode())
+"
+# watch logs
+kubectl -n harness logs -f deployment/harness
 ```

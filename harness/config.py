@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 import json
+import os
 
 
 @dataclass
@@ -43,20 +44,39 @@ class Config:
 
     @classmethod
     def load(cls) -> "Config":
-        """Load config from ~/.harness/config.json or use defaults."""
+        """Load config from environment, then ~/.harness/config.json, then defaults.
+
+        Environment variables take precedence over config file.
+        """
+        # Start with defaults
+        chat_model = "codestral:22b-v0.1-q8_0"
+        max_steps = 20
+        max_context_tokens = 28000
+        mcp_servers = DEFAULT_MCP_SERVERS.copy()
+
+        # Load from config file if exists
         config_path = Path.home() / ".harness" / "config.json"
         if config_path.exists():
             try:
                 data = json.loads(config_path.read_text())
-                return cls(
-                    chat_model=data.get("chat_model", "codestral:22b-v0.1-q8_0"),
-                    max_steps=data.get("max_steps", 20),
-                    max_context_tokens=data.get("max_context_tokens", 28000),
-                    mcp_servers=data.get("mcp_servers", DEFAULT_MCP_SERVERS.copy())
-                )
+                chat_model = data.get("chat_model", chat_model)
+                max_steps = data.get("max_steps", max_steps)
+                max_context_tokens = data.get("max_context_tokens", max_context_tokens)
+                mcp_servers = data.get("mcp_servers", mcp_servers)
             except (json.JSONDecodeError, TypeError):
                 pass
-        return cls()
+
+        # Environment variables override (for K8s ConfigMaps)
+        chat_model = os.getenv("CHAT_MODEL", chat_model)
+        max_steps = int(os.getenv("MAX_STEPS", max_steps))
+        max_context_tokens = int(os.getenv("MAX_CONTEXT_TOKENS", max_context_tokens))
+
+        return cls(
+            chat_model=chat_model,
+            max_steps=max_steps,
+            max_context_tokens=max_context_tokens,
+            mcp_servers=mcp_servers
+        )
 
     def get_mcp_servers(self) -> list[MCPServerConfig]:
         """Get MCP server configs."""

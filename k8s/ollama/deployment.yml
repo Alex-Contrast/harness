@@ -20,15 +20,16 @@ spec:
             - containerPort: 11434
           resources:
             requests:
-              memory: "4Gi"
+              memory: "8Gi"
               cpu: "2"
             limits:
-              memory: "10Gi"
+              memory: "24Gi"
               cpu: "4"
           volumeMounts:
             - name: ollama-data
               mountPath: /root/.ollama
       volumes:
         - name: ollama-data
-          persistentVolumeClaim:
-            claimName: ollama-pvc
+          hostPath:
+            path: /ollama-models
+            type: DirectoryOrCreate

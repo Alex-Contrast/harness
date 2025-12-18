@@ -6,6 +6,10 @@ echo "Stopping Harness K8s infrastructure..."
 echo "Stopping port forwards..."
 pkill -f "kubectl.*port-forward.*harness" 2>/dev/null || true
 
+# Stop minikube mount
+echo "Stopping minikube mount..."
+pkill -f "minikube mount" 2>/dev/null || true
+
 # Full stop if --full flag is passed
 if [[ "$1" == "--full" ]]; then
     echo "Stopping minikube..."
@@ -14,6 +18,6 @@ if [[ "$1" == "--full" ]]; then
     echo "Minikube stopped."
 else
     echo ""
-    echo "Port forwards stopped."
+    echo "Port forwards and mounts stopped."
     echo "Cluster still running. Use './stop.sh --full' to stop minikube."
 fi
