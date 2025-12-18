@@ -56,3 +56,5 @@ htmlcov/
 # K8s local
 kubeconfig
 *.kubeconfig
+
+.env

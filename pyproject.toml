@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "ollama",
     "mcp",
+    "python-dotenv",
 ]
 
 [project.scripts]
@@ -14,3 +15,6 @@ harness = "harness.__main__:main"
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["harness*"]

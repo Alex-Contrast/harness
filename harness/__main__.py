@@ -2,10 +2,16 @@
 
 import asyncio
 import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
+
 from .agent import run_session_async, _build_system_prompt
 from .config import Config
 from .mcp_client import MCPClientManager, MCPServer, initialize as init_mcp
 
+# Load .env from project root (supports both local dev and installed package)
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 async def main_async():
     """Async main function."""

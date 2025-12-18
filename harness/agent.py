@@ -2,10 +2,14 @@
 
 import asyncio
 import json
+import os
 import re
-import ollama
+from ollama import Client
 from .config import Config
 from .mcp_client import MCPClientManager, MCPServer, initialize as init_mcp, get_client_sync
+
+# Initialize Ollama client with host from environment
+ollama_client = Client(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
 
 def _build_system_prompt(tool_docs: str) -> str:
@@ -79,7 +83,7 @@ async def run_session_async(
     messages.append({"role": "user", "content": task})
 
     for step in range(config.max_steps):
-        response = ollama.chat(
+        response = ollama_client.chat(
             model=config.chat_model,
             messages=messages,
             stream=False

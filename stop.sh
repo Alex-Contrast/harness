@@ -1,21 +1,19 @@
 #!/bin/bash
 
-echo "Stopping Harness dependencies..."
+echo "Stopping Harness K8s infrastructure..."
 
-# Stop Qdrant
-if docker ps --format '{{.Names}}' | grep -q '^qdrant$'; then
-    echo "Stopping Qdrant..."
-    docker stop qdrant
+# Stop port forwards
+echo "Stopping port forwards..."
+pkill -f "kubectl.*port-forward.*harness" 2>/dev/null || true
+
+# Full stop if --full flag is passed
+if [[ "$1" == "--full" ]]; then
+    echo "Stopping minikube..."
+    minikube stop
+    echo ""
+    echo "Minikube stopped."
 else
-    echo "Qdrant not running"
+    echo ""
+    echo "Port forwards stopped."
+    echo "Cluster still running. Use './stop.sh --full' to stop minikube."
 fi
-
-# Stop Ollama
-if pgrep -x "ollama" > /dev/null; then
-    echo "Stopping Ollama..."
-    pkill -x ollama
-else
-    echo "Ollama not running"
-fi
-
-echo "Done."

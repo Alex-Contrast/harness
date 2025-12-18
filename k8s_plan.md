@@ -90,18 +90,18 @@ harness/
 
 ### Tasks
 
-- [ ] Create k8s/ directory structure
-- [ ] Create harness namespace
-- [ ] Deploy Ollama
-  - [ ] Deployment with resource limits
-  - [ ] Service (ClusterIP)
-  - [ ] PVC for model cache (optional but recommended)
-- [ ] Deploy Qdrant
-  - [ ] StatefulSet with PVC
-  - [ ] Service (ClusterIP)
-- [ ] Expose services to host (minikube tunnel or port-forward)
-- [ ] Update harness config to use K8s endpoints
-- [ ] Test: agent can reach Ollama and Qdrant
+- [x] Create k8s/ directory structure
+- [x] Create harness namespace
+- [x] Deploy Ollama
+  - [x] Deployment with resource limits
+  - [x] Service (ClusterIP)
+  - [x] PVC for model cache (optional but recommended)
+- [x] Deploy Qdrant
+  - [x] StatefulSet with PVC
+  - [x] Service (ClusterIP)
+- [x] Expose services to host (minikube tunnel or port-forward)
+- [x] Update harness config to use K8s endpoints
+- [x] Test: agent can reach Ollama and Qdrant
 
 ### Manifests
 

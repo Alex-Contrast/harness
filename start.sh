@@ -1,35 +1,36 @@
 #!/bin/bash
 
-echo "Starting Harness dependencies..."
+echo "Starting Harness K8s infrastructure..."
 
-# Start Ollama (if not already running)
-if ! pgrep -x "ollama" > /dev/null; then
-    echo "Starting Ollama..."
-    ollama serve &
-    sleep 2
+# Start minikube if not running
+if ! minikube status | grep -q "Running"; then
+    echo "Starting minikube..."
+    minikube start --cpus=4 --memory=12g
 else
-    echo "Ollama already running"
+    echo "Minikube already running"
 fi
 
-# Start Qdrant (if not already running)
-if ! docker ps --format '{{.Names}}' | grep -q '^qdrant$'; then
-    if docker ps -a --format '{{.Names}}' | grep -q '^qdrant$'; then
-        echo "Starting existing Qdrant container..."
-        docker start qdrant
-    else
-        echo "Creating and starting Qdrant container..."
-        docker run -d --name qdrant \
-            -p 6333:6333 -p 6334:6334 \
-            -v ~/.qdrant/storage:/qdrant/storage \
-            qdrant/qdrant
-    fi
-else
-    echo "Qdrant already running"
-fi
+# Apply K8s manifests
+echo "Applying K8s manifests..."
+kubectl apply -f k8s/namespace.yml
+kubectl apply -f k8s/ollama/
+kubectl apply -f k8s/qdrant/
 
-# Wait for services to be ready
-echo "Waiting for services..."
-sleep 5
+# Wait for pods to be ready
+echo "Waiting for pods to be ready..."
+kubectl -n harness wait --for=condition=ready pod -l app=ollama --timeout=120s
+kubectl -n harness wait --for=condition=ready pod -l app=qdrant --timeout=120s
+
+# Kill any existing port-forwards
+pkill -f "kubectl.*port-forward.*harness" 2>/dev/null || true
+
+# Start port forwarding in background
+echo "Starting port forwards..."
+kubectl -n harness port-forward svc/ollama 11434:11434 &>/dev/null &
+kubectl -n harness port-forward svc/qdrant 6333:6333 &>/dev/null &
+
+# Wait for port forwards to establish
+sleep 2
 
 # Verify services
 echo ""
@@ -39,17 +40,7 @@ printf "Ollama: "
 curl -s http://localhost:11434/api/tags > /dev/null && echo "OK" || echo "FAILED"
 
 printf "Qdrant: "
-for i in 1 2 3 4 5; do
-    if curl -s http://localhost:6333/ | grep -q qdrant; then
-        echo "OK"
-        break
-    fi
-    if [ $i -eq 5 ]; then
-        echo "FAILED"
-    else
-        sleep 1
-    fi
-done
+curl -s http://localhost:6333/collections > /dev/null && echo "OK" || echo "FAILED"
 
 echo ""
-echo "Ready! Run 'swift run HarnessAgent' to start the agent."
+echo "Ready! Run 'python -m harness' to start the agent."
