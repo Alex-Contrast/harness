@@ -1,6 +1,7 @@
 """Entry point for Harness agent."""
 
 import asyncio
+import os
 import sys
 from pathlib import Path
 
@@ -12,6 +13,17 @@ from .mcp_client import MCPClientManager, MCPServer, initialize as init_mcp
 
 # Load .env from project root (supports both local dev and installed package)
 load_dotenv(Path(__file__).parent.parent / ".env")
+
+
+def save_output(content: str) -> None:
+    """Save output to file if HARNESS_OUTPUT_DIR is set."""
+    output_dir = os.getenv("HARNESS_OUTPUT_DIR")
+    job_id = os.getenv("HARNESS_JOB_ID", "unknown")
+
+    if output_dir:
+        output_path = Path(output_dir) / f"{job_id}.txt"
+        output_path.write_text(content)
+        print(f"Output saved to {output_path}")
 
 async def main_async():
     """Async main function."""
@@ -39,7 +51,8 @@ async def main_async():
         task = " ".join(sys.argv[1:])
         messages = [{"role": "system", "content": ""}]
         try:
-            await run_session_async(task, messages, mcp, config)
+            result = await run_session_async(task, messages, mcp, config)
+            save_output(result or "")
         finally:
             await mcp.close()
         return

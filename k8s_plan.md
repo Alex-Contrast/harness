@@ -385,7 +385,7 @@ kubectl -n harness exec -it deployment/harness -- python -m harness "explain thi
 - [x] Add liveness probes to all services
 - [x] Tune resource limits based on actual usage
 - [x] Add pod disruption budgets (optional)
-- [ ] Set up basic logging aggregation (optional) --> using stern for observability
+- [-] Set up basic logging aggregation (optional) --> using stern for observability
 
 ### Ollama Probes
 ```yaml
@@ -457,11 +457,11 @@ livenessProbe:
 
 ### Tasks
 
-- [ ] Create Job template for agent tasks
-- [ ] Build simple API/CLI to create jobs
-- [ ] Handle job output (logs or PVC)
-- [ ] Add job cleanup policy (TTL)
-- [ ] Test parallel job execution
+- [x] Create Job template for agent tasks
+- [x] Build simple API/CLI to create jobs
+- [x] Handle job output (logs or PVC)
+- [x] Add job cleanup policy (TTL)
+- [] Test parallel job execution
 
 ### Job Template
 ```yaml

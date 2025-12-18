@@ -25,14 +25,30 @@ class MCPServerConfig:
 
 
 # Default MCP servers - filesystem is essential for a coding agent
-# Using uvx (Python's npx) to run the Python-based MCP filesystem server
+# Using npx to run the official Anthropic MCP filesystem server
+# Use /tmp for K8s jobs (writable), or home directory for local dev
+FILESYSTEM_ROOT = os.getenv("FILESYSTEM_ROOT", "/tmp")
 DEFAULT_MCP_SERVERS = [
     {
         "name": "filesystem",
-        "command": "uvx",
-        "args": ["mcp-server-filesystem", str(Path.home())]
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", FILESYSTEM_ROOT]
     }
 ]
+
+# Add Contrast MCP if credentials are configured
+if os.getenv("CONTRAST_API_KEY"):
+    DEFAULT_MCP_SERVERS.append({
+        "name": "contrast",
+        "command": "java",
+        "args": ["-jar", "/opt/mcp-contrast.jar", "-t", "stdio"],
+        "env": {
+            "CONTRAST_HOST_NAME": os.getenv("CONTRAST_HOST_NAME", ""),
+            "CONTRAST_API_KEY": os.getenv("CONTRAST_API_KEY", ""),
+            "CONTRAST_ORG_ID": os.getenv("CONTRAST_ORG_ID", ""),
+            "CONTRAST_AUTH_HEADER": os.getenv("CONTRAST_AUTH_HEADER", ""),
+        }
+    })
 
 
 @dataclass

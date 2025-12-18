@@ -9,17 +9,14 @@ kubectl apply -f k8s/ollama/ --dry-run=client
 kubectl apply -f k8s/qdrant/ --dry-run=client
 
 # Deploy
-# 1. Start minikube (if not running)
+# 1. Start minikube
 minikube start --cpus=4 --memory=12g
-
-# 2. Apply manifests (for real this time)
+# 2. Apply manifests
 kubectl apply -f k8s/namespace.yml
 kubectl apply -f k8s/ollama/
 kubectl apply -f k8s/qdrant/
-
 # 3. Watch pods come up
 kubectl -n harness get pods -w
-
 # Stop
 minikube stop
 # OR remove cluster and data: minikube delete
@@ -68,12 +65,17 @@ kubectl delete namespace harness
 ### Build Commands
 # Build image
 docker build -t harness:local .
-
 # Load into minikube
 minikube image load harness:local
-
 # Deploy
 kubectl apply -f k8s/harness/
+# Update code image and restart
+docker build -t harness:local .
+minikube image load harness:local
+# or no cache: docker build --no-cache -t harness:local .
+kubectl -n harness rollout restart deployment/harness
+# one liner
+docker build -t harness:local . && minikube image rm harness:local 2>/dev/null; minikube image load harness:local
 
 # Attach to agent (interactive)
 kubectl -n harness attach -it deployment/harness
@@ -124,5 +126,23 @@ kubectl -n harness top pods --containers
 
 # stern to watch logs
 stern -n harness .
+stern -n harness harness-task
 # <pod-name> <container-name> │ <log message>
+
+# get jobs
+kubectl -n harness get jobs
+# kill job
+kubectl -n harness delete job harness-task-1766083319
+
+# start a pod for debugging
+kubectl -n harness run mcp-debug --image=harness:local --restart=Never --command -- sleep 3600
+kubectl -n harness exec -it mcp-debug -- sh
+kubectl -n harness delete pod mcp-debug
+# nuke it
+minikube image rm harness:local 2>/dev/null
+minikube cache delete harness:local 2>/dev/null
+minikube image load harness:local --overwrite
+# rebuild image
+minikube image build -t harness:local .
+docker build -t harness:local . && docker save harness:local | minikube image load --overwrite -
 ```

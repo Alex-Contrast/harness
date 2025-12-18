@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: harness-task-
+  namespace: harness
+spec:
+  ttlSecondsAfterFinished: 60  # Cleanup after a minute
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: harness
+          image: harness:local
+          imagePullPolicy: Never
+          envFrom:
+            - configMapRef:
+                name: harness-config
+          env:
+            - name: HARNESS_TASK
+              value: "${TASK}"  # Replaced by envsubst
+            - name: HARNESS_JOB_ID
+              value: "${JOB_ID}"  # For output file naming
+            - name: HARNESS_OUTPUT_DIR
+              value: "/output"
+          command: ["python", "-m", "harness", "$(HARNESS_TASK)"]
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: output
+              mountPath: /output
+      volumes:
+        - name: output
+          persistentVolumeClaim:
+            claimName: harness-output

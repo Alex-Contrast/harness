@@ -14,6 +14,7 @@ ollama_client = Client(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
 def _build_system_prompt(tool_docs: str) -> str:
     """Build system prompt with available tools."""
+    filesystem_root = os.getenv("FILESYSTEM_ROOT", "/tmp")
     return f"""You are a coding assistant with access to tools.
 
 Available tools:
@@ -25,7 +26,7 @@ To use a tool, respond with a JSON block:
 ```
 
 Rules:
-- Always use absolute paths for files
+- For file operations, use paths under {filesystem_root}
 - Use ONE tool at a time, wait for results
 - When done or answering directly, respond normally WITHOUT json blocks
 - Be concise"""
