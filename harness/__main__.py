@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from .agent import run_session_async, _build_system_prompt
 from .config import Config
 from .mcp_client import MCPClientManager, MCPServer, initialize as init_mcp
+from .tools import NATIVE_TOOLS
 
 # Load .env from project root (supports both local dev and installed package)
 load_dotenv(Path(__file__).parent.parent / ".env")
@@ -99,10 +100,25 @@ async def main_async():
                         continue
 
                     elif cmd == "tools":
-                        print("\n--- Available Tools ---")
+                        print("\n--- MCP Tools ---")
                         for name, tool in mcp.tools.items():
                             print(f"  {name}: {tool.description[:60]}...")
+                        print("\n--- Native Tools ---")
+                        for name, tool in NATIVE_TOOLS.items():
+                            print(f"  {name}: {tool.description[:60]}...")
                         print("---\n")
+                        continue
+
+                    elif cmd == "index":
+                        parts = task.split(maxsplit=1)
+                        directory = parts[1] if len(parts) > 1 else "."
+                        print(f"Indexing {directory}...")
+                        from .indexer import index_directory
+                        try:
+                            count = index_directory(directory)
+                            print(f"Done! Indexed {count} chunks.\n")
+                        except Exception as e:
+                            print(f"Error indexing: {e}\n")
                         continue
 
                     elif cmd == "history":
@@ -127,12 +143,13 @@ async def main_async():
                     elif cmd == "help":
                         print("""
 Commands:
-  /clear    - Clear conversation context (start fresh)
-  /context  - Show context stats (message count, tokens)
-  /tools    - List available MCP tools
-  /history  - Show recent conversation history
-  /config   - Show current config
-  /quit     - Exit the REPL
+  /clear      - Clear conversation context (start fresh)
+  /context    - Show context stats (message count, tokens)
+  /tools      - List available tools (MCP and native)
+  /index [dir]- Index a directory for semantic search
+  /history    - Show recent conversation history
+  /config     - Show current config
+  /quit       - Exit the REPL
 
 Just type your request to interact with the agent.
 The agent remembers previous turns until you /clear.

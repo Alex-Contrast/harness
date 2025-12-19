@@ -1,4 +1,4 @@
-"""Agent loop for Harness using MCP tools."""
+"""Agent loop for Harness using MCP and native tools."""
 
 import asyncio
 import json
@@ -7,18 +7,30 @@ import re
 from ollama import Client
 from .config import Config
 from .mcp_client import MCPClientManager, MCPServer, initialize as init_mcp, get_client_sync
+from .tools import NATIVE_TOOLS
 
 # Initialize Ollama client with host from environment
 ollama_client = Client(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"))
 
 
-def _build_system_prompt(tool_docs: str) -> str:
+def _get_native_tool_docs() -> str:
+    """Get documentation for native Python tools."""
+    return "\n".join(tool.to_doc() for tool in NATIVE_TOOLS.values())
+
+
+def _build_system_prompt(mcp_tool_docs: str) -> str:
     """Build system prompt with available tools."""
     filesystem_root = os.getenv("FILESYSTEM_ROOT", "/tmp")
+    native_docs = _get_native_tool_docs()
+
+    all_tools = mcp_tool_docs
+    if native_docs:
+        all_tools = f"{mcp_tool_docs}\n{native_docs}" if mcp_tool_docs else native_docs
+
     return f"""You are a coding assistant with access to tools.
 
 Available tools:
-{tool_docs}
+{all_tools}
 
 To use a tool, respond with a JSON block:
 ```json
@@ -27,6 +39,7 @@ To use a tool, respond with a JSON block:
 
 Rules:
 - For file operations, use paths under {filesystem_root}
+- Use semantic_search to find relevant code before making changes
 - Use ONE tool at a time, wait for results
 - When done or answering directly, respond normally WITHOUT json blocks
 - Be concise"""
@@ -100,7 +113,12 @@ async def run_session_async(
             messages.append({"role": "assistant", "content": content})
 
             print(f"  -> {name}({', '.join(f'{k}={repr(v)[:50]}' for k, v in args.items())})")
-            result = await mcp.call_tool(name, args)
+
+            # Check native tools first, then fall back to MCP
+            if name in NATIVE_TOOLS:
+                result = NATIVE_TOOLS[name].execute(**args)
+            else:
+                result = await mcp.call_tool(name, args)
 
             messages.append({"role": "user", "content": f"Tool result:\n{result}"})
         else:
